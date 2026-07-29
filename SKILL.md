@@ -26,8 +26,9 @@ Use these defaults unless the user explicitly prioritizes immediate fidelity ove
 ```
 
 - Exclude only genuine above-the-fold images from lazy loading.
-- For dense case-study sections, leave thumbnail `src` unset and store it in `data-src`; use `IntersectionObserver` with a modest prefetch margin (roughly 300–500px) to populate it near the viewport.
-- Paginate or virtualize large catalogs. Render and load only the current page; ten cards per page is a sound default for image-heavy report grids.
+- Use exactly one deferral mechanism for each image. If `IntersectionObserver` controls `data-src`, do not leave that image under native `loading="lazy"` after the observer fires: set `loading = 'eager'`, then set `src`. Layering both mechanisms can leave visible cards blank on some browsers.
+- For a bounded key case-study section (for example, 12 cases with compact WebP thumbnails), observe the section container—not individual cards—and load all section thumbnails plus video posters once it is near the viewport. This prevents blank media during fast scrolling while keeping the first screen free of those requests. Keep originals and videos click-to-load.
+- Paginate or virtualize large catalogs. Render only the current page; ten cards per page is a sound default for image-heavy report grids. Current-page images may load eagerly because off-page cards do not exist in the DOM; do not apply native lazy loading to them again.
 - Keep original-resolution URLs out of card markup. Use them only inside the modal/detail renderer.
 - Avoid eager video poster requests in repeated cards. Assign posters together with deferred thumbnails when the card approaches the viewport.
 - Preserve accessibility: give meaningful images an appropriate `alt`, expose visible controls for detail views, and retain keyboard close/previous/next behavior when modifying a gallery.
@@ -57,7 +58,9 @@ Run the checks against the exact release copy, not merely the authoring source:
 3. Confirm every published video decodes with the command above.
 4. Confirm thumbnail assets exist and that originals are reachable from their click handler only.
 5. Inspect initial network behavior in a browser: the first screen must not request offscreen galleries, all catalog pages, or video files.
-6. Review the repository diff for unreferenced binaries and remove them from the release scope.
+6. Scroll to each deferred media section and assert every expected thumbnail has `naturalWidth > 0`, no `data-src` remains pending, and no loaded image has `complete === true && naturalWidth === 0`.
+7. After deployment, repeat that browser assertion on the public URL; a `200` asset response alone does not prove that the page requested or rendered it.
+8. Review the repository diff for unreferenced binaries and remove them from the release scope.
 
 ## Release discipline
 
