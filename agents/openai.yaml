@@ -1,0 +1,4 @@
+interface:
+  display_name: "报告媒体性能"
+  short_description: "优化静态报告媒体，守住首屏加载性能与发布质量。"
+  default_prompt: "Use $report-media-performance to add and validate report media without slowing initial load."
